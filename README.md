@@ -72,6 +72,20 @@ python naive_baseline.py                # Khởi tạo baseline
 
 ## Chạy toàn bộ & Kiểm tra
 
+OpenRouter dùng `OPENAI_BASE_URL`, `OPENAI_API_KEY` và `OPENAI_MODEL` trong `.env`.
+Model mẫu là `google/gemma-4-31b-it:free`; `RAGAS_MAX_WORKERS=1` hạn chế
+request đồng thời trên endpoint miễn phí. RAGAS dùng BGE-M3 local cho embedding.
+Report mới lưu `per_question` (answer, contexts, ground truth và bốn metric),
+`evaluation_status` và số metric thất bại. Điểm fallback 0 không được xem là
+bằng chứng mô hình trả lời sai khi job đánh giá thất bại.
+Các report cũ chỉ có aggregate không thể khôi phục answer/context đã không lưu.
+Không đưa `.env`, `.venv/` hoặc `.cache/` vào bài nộp.
+
+`OPENAI_REQUESTS_PER_MINUTE=10` giãn các request sinh câu trả lời, enrichment
+và RAGAS bằng cùng một bộ điều phối trong tiến trình. Request 429 được thử lại
+tối đa 5 lượt, chờ ít nhất 60 giây và tôn trọng `Retry-After` dạng số giây.
+Giới hạn ngày của free endpoint không thể xử lý bằng việc chờ ngắn.
+
 ```bash
 python main.py                          # Chạy Naive + Production + In bảng so sánh
 python check_lab.py                     # Script kiểm tra hợp lệ trước khi nộp (chạy được trên mọi OS)

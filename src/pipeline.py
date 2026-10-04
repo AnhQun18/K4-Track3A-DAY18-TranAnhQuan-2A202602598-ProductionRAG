@@ -15,7 +15,7 @@ from src.m2_search import HybridSearch
 from src.m3_rerank import CrossEncoderReranker
 from src.m4_eval import load_test_set, evaluate_ragas, failure_analysis, save_report
 from src.m5_enrichment import enrich_chunks
-from config import RERANK_TOP_K
+from config import RERANK_TOP_K, OPENAI_MODEL
 
 
 def build_pipeline():
@@ -71,17 +71,16 @@ def run_query(query: str, search: HybridSearch, reranker: CrossEncoderReranker) 
     from config import OPENAI_API_KEY
     if OPENAI_API_KEY and contexts:
         try:
-            from openai import OpenAI
-            client = OpenAI()
+            from src.llm_client import get_openai_client
+            client = get_openai_client()
             context_str = "\n\n".join(contexts)
-            resp = client.chat.completions.create(model="gpt-4o-mini", messages=[
+            resp = client.chat.completions.create(model=OPENAI_MODEL, temperature=0, max_tokens=512, messages=[
                 {"role": "system", "content": "Trả lời CHỈ dựa trên context. Nếu không có → nói 'Không tìm thấy.'"},
                 {"role": "user", "content": f"Context:\n{context_str}\n\nCâu hỏi: {query}"},
             ])
             answer = resp.choices[0].message.content
         except Exception as e:
-            print(f"  ⚠️  LLM generation failed: {e}", flush=True)
-            answer = contexts[0]
+            raise RuntimeError("Production generation failed after API retries") from e
     else:
         answer = contexts[0] if contexts else "Không tìm thấy thông tin."
     return answer, contexts

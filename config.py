@@ -7,6 +7,9 @@ load_dotenv()
 
 # --- API Keys ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "google/gemma-4-31b-it:free")
+RAGAS_MAX_WORKERS = max(1, int(os.getenv("RAGAS_MAX_WORKERS", "1")))
+OPENAI_REQUESTS_PER_MINUTE = max(1.0, float(os.getenv("OPENAI_REQUESTS_PER_MINUTE", "10")))
 
 # --- Qdrant ---
 QDRANT_HOST = "localhost"
